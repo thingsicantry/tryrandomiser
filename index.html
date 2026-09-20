@@ -115,6 +115,7 @@ button:active {
   background: #fff;
   color: #171717;
 }
+.global-counter { margin-top:22px; font-size:15px; font-weight:900; color:#171717; }
 .counter {
   text-align: center;
   color: #888;
@@ -154,10 +155,11 @@ button:active {
       <div class="hint" id="hint">You never know what you might discover.</div>
 
       <div class="controls">
-        <button id="randomBtn" onclick="randomTry()">🎲 Give Me Something Random</button>
+        <button id="randomBtn" onclick="randomTry(true)">🎲 Give Me Something Random</button>
         <button class="secondary" onclick="copyChallenge()">📋 Copy Challenge</button>
       </div>
 
+      <div class="global-counter" aria-live="polite">🎲 <span id="tryCount">0</span> challenges tried</div>
       <div class="counter">200 things to try — and more to come.</div>
     </div>
   </div>
@@ -374,7 +376,14 @@ const challenges = [
 let lastIndex = -1;
 let currentChallenge = null;
 
-function randomTry() {
+const COUNTER_URL="https://abacus.jasoncameron.dev";
+const COUNTER_NAMESPACE="thingsicantry_7k4p9m";
+const COUNTER_KEY="random_challenges_3x8q2v";
+
+async function loadTryCount(){try{const r=await fetch(`${COUNTER_URL}/get/${COUNTER_NAMESPACE}/${COUNTER_KEY}`,{cache:"no-store"});if(!r.ok)throw Error();const d=await r.json();document.getElementById("tryCount").textContent=Number(d.value||0).toLocaleString()}catch(e){console.warn("Could not load counter",e)}}
+async function incrementTryCount(){try{const r=await fetch(`${COUNTER_URL}/hit/${COUNTER_NAMESPACE}/${COUNTER_KEY}`,{cache:"no-store"});if(!r.ok)throw Error();const d=await r.json();document.getElementById("tryCount").textContent=Number(d.value||0).toLocaleString()}catch(e){console.warn("Could not update counter",e)}}
+
+function randomTry(countClick=false) {
   let i;
   do {
     i = Math.floor(Math.random() * challenges.length);
@@ -386,6 +395,7 @@ function randomTry() {
   document.getElementById("category").textContent = currentChallenge[0];
   document.getElementById("challenge").textContent = currentChallenge[1];
   document.getElementById("hint").textContent = currentChallenge[2];
+  if (countClick) incrementTryCount();
 }
 
 function copyChallenge() {
@@ -404,6 +414,7 @@ function copyChallenge() {
 }
 
 randomTry();
+loadTryCount();
 </script>
 </body>
 </html>
